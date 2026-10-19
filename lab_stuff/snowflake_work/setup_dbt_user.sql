@@ -1,0 +1,23 @@
+USE ROLE ACCOUNTADMIN;
+
+CREATE ROLE IF NOT EXISTS DEPARTURES_DBT_ROLE;
+
+CREATE USER IF NOT EXISTS extract_loader
+TYPE = SERVICE
+RSA_PUBLIC_KEY = '' -- locate the key
+DEFAULT_ROLE = DEPARTURES_DBT_ROLE
+DEFAULT_WAREHOUSE = COMPUTE_WH
+COMMENT = "Service user for dlt pipeline";
+
+GRANT ROLE DEPARTURES_DBT_ROLE TO USER extract_loader;
+GRANT ROLE DEPARTURES_DBT_ROLE TO USER MeganLoe;
+
+GRANT ROLE DEPARTURES_DBT_ROLE TO ROLE SYSADMIN;
+
+GRANT USAGE ON WAREHOUSE compute_wh TO ROLE departures_dbt_role;
+GRANT USAGE ON DATABASE airport_departures TO ROLE departures_dbt_role;
+GRANT USAGE ON SCHEMA airport_departures.staging TO ROLE departures_dbt_role;
+GRANT CREATE TABLE ON SCHEMA airport_departures.staging TO ROLE departures_dbt_role;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA airport_departures.staging TO ROLE departures_dbt_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON FUTURE TABLES IN SCHEMA airport_departures.staging TO ROLE departures_dbt_role;

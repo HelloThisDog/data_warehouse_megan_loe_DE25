@@ -5,6 +5,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import dlt
 from pathlib import Path
+from io import StringIO
 
 load_dotenv()
 
@@ -20,6 +21,9 @@ headers = {
 
 today = datetime.today()
 dates = [(today - timedelta(days=i)).strftime("%Y-%m-%d") for i in range (3)]
+
+URL = "https://en.wikipedia.org/wiki/List_of_airline_codes"
+HEADERS = {"User-Agent": "airline-codes-project/1.0"}
 
 @dlt.resource(write_disposition="replace")
 def fetch_flight_data(flight_type):
@@ -51,6 +55,20 @@ def fetch_flight_data(flight_type):
     print(f"\nFinal shape: {df_all.shape}")
 
     yield df_all
+
+@dlt.resource(write_disposition="replace")
+def airline_codes():
+    html = requests.get(URL, headers=HEADERS, timeout=30).text
+    tables = pd.read_html(StringIO(html), attrs={"class": "wikitable"})
+    df = max(tables, key=len)
+
+    df.columns = [str(c).strip().lower().replace(" ", "_") for c in df.columns]
+
+    yield df.to_dict(orient="records")
+
+@dlt.source
+def flights_airlines(flight_type, table_name):
+    return airline_codes(), fetch_flight_data(flight_type).with_name(table_name)
 
 def run_pipeline(flight_type, table_name):
     pipeline = dlt.pipeline(

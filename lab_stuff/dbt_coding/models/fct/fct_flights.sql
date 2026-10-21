@@ -7,4 +7,11 @@ select
     scheduled_departure_time,
     departure_airport_short,
     airline_icao,
+    CASE
+        WHEN actual_departure_time IS NULL THEN NULL   -- no actual time yet (e.g. not departed / cancelled)
+        WHEN TRY_TO_TIMESTAMP_NTZ(actual_departure_time)
+             <= TRY_TO_TIMESTAMP_NTZ(scheduled_departure_time)
+            THEN 'Yes'
+        ELSE 'No'
+    END AS on_time
 from flight_departures

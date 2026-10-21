@@ -77,7 +77,7 @@ def run_pipeline(flight_type, table_name):
         dataset_name="staging",
     )
 
-    load_info = pipeline.run(fetch_flight_data(flight_type), table_name=table_name)
+    load_info = pipeline.run(flights_airlines(flight_type, table_name))
     print(load_info)
 
 if __name__ == '__main__':

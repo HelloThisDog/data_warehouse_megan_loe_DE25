@@ -1,0 +1,9 @@
+sources:
+  - name: airport_departures
+    schema: staging
+    tables:
+      - name: stg_flight
+        identifier: flights_departures
+      
+      - name: stg_airline
+        identifier: airline_codes
